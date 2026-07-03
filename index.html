@@ -6,7 +6,7 @@
     <title>My Links</title>
     <meta
       name="description"
-      content="프로필, 소셜 미디어, 콘텐츠, 문의 링크를 한곳에 모은 링크트리 페이지입니다."
+      content="A Linktree-style page with profile, social, content, and contact links."
     />
     <style>
       :root {
@@ -185,6 +185,25 @@
         color: var(--white);
       }
 
+      .ambassador {
+        min-height: 82px;
+        border-color: rgba(213, 160, 33, 0.7);
+        background:
+          linear-gradient(135deg, rgba(239, 111, 97, 0.96), rgba(15, 118, 110, 0.96)),
+          #171717;
+        color: var(--white);
+        box-shadow: 0 18px 42px rgba(15, 118, 110, 0.24);
+      }
+
+      .ambassador .title {
+        font-size: 1.1rem;
+      }
+
+      .ambassador .desc,
+      .ambassador .arrow {
+        color: rgba(255, 255, 255, 0.78);
+      }
+
       .featured .desc,
       .featured .arrow {
         color: rgba(255, 255, 255, 0.72);
@@ -216,60 +235,69 @@
   </head>
   <body>
     <main class="page">
-      <section class="profile" aria-label="프로필">
+      <section class="profile" aria-label="Profile">
         <div class="avatar-wrap">
-          <img class="avatar" src="./profile-visual.png" alt="프로필 이미지" />
+          <img class="avatar" src="./logo.jpg" alt="The Food Party logo" />
         </div>
-        <h1>나의 링크</h1>
-        <p class="handle">@yourname</p>
+        <h1>The Food Party</h1>
+        <p class="handle">@thefoodparty.official · @steveseoulk</p>
         <p class="bio">
-          작업, 콘텐츠, 소셜 채널, 문의 링크를 한곳에 모았습니다. 원하는 버튼을 눌러
-          바로 이동하세요.
+          Explore The Food Party, NVIDIA Inception Program powered AI, social channels,
+          video content, and contact information in one place.
         </p>
       </section>
 
-      <nav class="links" aria-label="주요 링크">
-        <a class="link featured" href="https://example.com" target="_blank" rel="noreferrer">
-          <span class="icon coral">★</span>
+      <nav class="links" aria-label="Main links">
+        <a class="link ambassador" href="https://forms.gle/NbrDPsauLKRk5gvG6" target="_blank" rel="noreferrer">
+          <span class="icon gold">🎓</span>
           <span class="text">
-            <span class="title">대표 링크</span>
-            <span class="desc">가장 먼저 보여주고 싶은 페이지</span>
+            <span class="title">👇 Join Our 🎓 Global Ambassador Program</span>
+            <span class="desc">Apply now and grow with The Food Party</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="https://instagram.com" target="_blank" rel="noreferrer">
+        <a class="link featured" href="https://www.fdparty.com" target="_blank" rel="noreferrer">
+          <span class="icon coral">★</span>
+          <span class="text">
+            <span class="title">Official Website</span>
+            <span class="desc">Visit the Food Party website</span>
+          </span>
+          <span class="arrow" aria-hidden="true">›</span>
+        </a>
+
+        <a class="link" href="https://www.instagram.com/thefoodparty.official/" target="_blank" rel="noreferrer">
           <span class="icon teal">IG</span>
           <span class="text">
             <span class="title">Instagram</span>
-            <span class="desc">사진, 일상, 최신 소식</span>
+            <span class="desc">Photos, updates, and behind-the-scenes moments</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="https://youtube.com" target="_blank" rel="noreferrer">
+        <a class="link" href="https://www.youtube.com/@fdpartycom" target="_blank" rel="noreferrer">
           <span class="icon coral">YT</span>
           <span class="text">
             <span class="title">YouTube</span>
-            <span class="desc">영상 콘텐츠와 플레이리스트</span>
+            <span class="desc">Videos, stories, and playlists</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="https://blog.example.com" target="_blank" rel="noreferrer">
+        <a class="link" href="https://www.linkedin.com/in/sung-tae-steve-kim-4490785a/" target="_blank" rel="noreferrer">
           <span class="icon gold">B</span>
           <span class="text">
             <span class="title">Blog</span>
-            <span class="desc">글, 노트, 프로젝트 기록</span>
+            <span class="desc">LinkedIn profile and professional updates</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="mailto:hello@example.com">
+        <a class="link" href="mailto:help@fdparty.com">
           <span class="icon">✉</span>
           <span class="text">
             <span class="title">Contact</span>
-            <span class="desc">협업 및 문의 메일 보내기</span>
+            <span class="desc">Send a message for partnerships and inquiries</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
