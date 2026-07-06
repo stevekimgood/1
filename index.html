@@ -678,6 +678,10 @@
             <span class="stat-label">Subscribers</span>
             <span class="stat-value" data-stat-subscribers>0</span>
           </button>
+          <button class="stat-card" type="button" data-open-menus>
+            <span class="stat-label">Menus</span>
+            <span class="stat-value" data-stat-menus>0</span>
+          </button>
         </div>
         <div class="stat-list" data-stat-list></div>
         <div class="dashboard-actions">
@@ -699,6 +703,17 @@
           </div>
         </div>
         <div class="subscriber-list" data-subscriber-list></div>
+      </div>
+      <div data-menu-dashboard hidden>
+        <div class="dashboard-actions">
+          <button class="dashboard-action" type="button" data-back-menu-dashboard>Back</button>
+          <button class="dashboard-action" type="button" data-add-menu>Add Menu</button>
+        </div>
+        <div class="editor-rows" data-menu-manager></div>
+        <div class="dashboard-actions">
+          <button class="dashboard-action" type="button" data-reset-menus>Reset Menus</button>
+          <button class="dashboard-action" type="button" data-save-menus>Save Menus</button>
+        </div>
       </div>
     </aside>
 
@@ -737,7 +752,8 @@
           templateId: "",
         };
         const isOwner = new URLSearchParams(window.location.search).get("owner") === "1";
-        const links = [...document.querySelectorAll("[data-edit-id]")];
+        const linksContainer = document.querySelector(".links");
+        let links = [...document.querySelectorAll("[data-edit-id]")];
         const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         const sessionStart = Date.now();
         const toggle = document.querySelector(".edit-toggle");
@@ -758,6 +774,7 @@
         const statDau = document.querySelector("[data-stat-dau]");
         const statMau = document.querySelector("[data-stat-mau]");
         const statSubscribers = document.querySelector("[data-stat-subscribers]");
+        const statMenus = document.querySelector("[data-stat-menus]");
         const subscriberTotal = document.querySelector("[data-subscriber-total]");
         const subscriberLatest = document.querySelector("[data-subscriber-latest]");
         const statList = document.querySelector("[data-stat-list]");
@@ -765,8 +782,15 @@
         const statReset = document.querySelector("[data-stat-reset]");
         const dashboardMain = document.querySelector("[data-dashboard-main]");
         const subscriberDashboard = document.querySelector("[data-subscriber-dashboard]");
+        const menuDashboard = document.querySelector("[data-menu-dashboard]");
         const openSubscribers = document.querySelector("[data-open-subscribers]");
         const backDashboard = document.querySelector("[data-back-dashboard]");
+        const openMenus = document.querySelector("[data-open-menus]");
+        const backMenuDashboard = document.querySelector("[data-back-menu-dashboard]");
+        const menuManager = document.querySelector("[data-menu-manager]");
+        const addMenu = document.querySelector("[data-add-menu]");
+        const saveMenus = document.querySelector("[data-save-menus]");
+        const resetMenus = document.querySelector("[data-reset-menus]");
         const signup = document.querySelector(".signup");
         const signupForm = document.querySelector("#newsletterSignup");
         const signupClose = document.querySelector(".signup-close");
@@ -778,6 +802,12 @@
           id: link.dataset.editId,
           title: link.dataset.defaultTitle,
           url: link.dataset.defaultUrl,
+          desc: link.querySelector(".desc")?.textContent || "",
+          icon: link.querySelector(".icon")?.textContent || "•",
+          className: link.className,
+          newsletter: link.dataset.newsletterTrigger !== undefined,
+          target: link.target,
+          rel: link.rel,
         }));
 
         const normalizeUrl = (value) => {
@@ -925,6 +955,7 @@
 
         const getItems = () => {
           const saved = readSettings();
+          if (Array.isArray(saved.menuItems)) return saved.menuItems;
           const menu = saved.menu || saved;
           return defaults.map((item) => ({ ...item, ...(menu[item.id] || {}) }));
         };
@@ -934,13 +965,46 @@
           return saved.footer || footer.dataset.defaultFooter;
         };
 
+        const buildMenuLink = (item) => {
+          const link = document.createElement("a");
+          link.className = item.className || "link";
+          link.href = normalizeUrl(item.url);
+          if (item.target) link.target = item.target;
+          if (item.rel) link.rel = item.rel;
+          link.dataset.editId = item.id;
+          link.dataset.defaultTitle = item.title;
+          link.dataset.defaultUrl = item.url;
+          if (item.newsletter) link.dataset.newsletterTrigger = "";
+
+          const icon = document.createElement("span");
+          icon.className = "icon";
+          icon.textContent = item.icon || "•";
+
+          const text = document.createElement("span");
+          text.className = "text";
+
+          const title = document.createElement("span");
+          title.className = "title";
+          title.textContent = item.title;
+
+          const desc = document.createElement("span");
+          desc.className = "desc";
+          desc.textContent = item.desc || "";
+
+          const arrow = document.createElement("span");
+          arrow.className = "arrow";
+          arrow.setAttribute("aria-hidden", "true");
+          arrow.textContent = "›";
+
+          text.append(title, desc);
+          link.append(icon, text, arrow);
+          return link;
+        };
+
         const applyItems = (items) => {
-          items.forEach((item) => {
-            const link = links.find((candidate) => candidate.dataset.editId === item.id);
-            if (!link) return;
-            link.href = normalizeUrl(item.url);
-            link.querySelector(".title").textContent = item.title;
-          });
+          linksContainer.replaceChildren(...items.map(buildMenuLink));
+          links = [...document.querySelectorAll("[data-edit-id]")];
+          bindLinkEvents();
         };
 
         const applyFooter = () => {
@@ -1012,6 +1076,7 @@
           statMau.textContent = String(mau);
           const subscribers = readSubscribers();
           statSubscribers.textContent = String(subscribers.length);
+          statMenus.textContent = String(items.length);
           subscriberTotal.textContent = String(subscribers.length);
           subscriberLatest.textContent = subscribers.length
             ? subscribers[subscribers.length - 1].date
@@ -1072,6 +1137,58 @@
           row.append(label, input);
         };
 
+        const buildMenuManagerRow = (item) => {
+          const row = document.createElement("div");
+          row.className = "editor-row";
+          row.dataset.id = item.id;
+          addField(row, "Name", item.title, "title");
+          addField(row, "Link", item.url, "url");
+          addField(row, "Description", item.desc || "", "desc");
+          addField(row, "Icon", item.icon || "•", "icon");
+
+          const remove = document.createElement("button");
+          remove.className = "dashboard-action";
+          remove.type = "button";
+          remove.textContent = "Delete";
+          remove.addEventListener("click", () => row.remove());
+          row.append(remove);
+          return row;
+        };
+
+        const renderMenuManager = () => {
+          menuManager.replaceChildren(...getItems().map(buildMenuManagerRow));
+        };
+
+        const collectManagedItems = () =>
+          [...menuManager.querySelectorAll(".editor-row[data-id]")].map((row) => {
+            const original =
+              getItems().find((item) => item.id === row.dataset.id) ||
+              defaults.find((item) => item.id === row.dataset.id) ||
+              {};
+            return {
+              ...original,
+              id: row.dataset.id,
+              title: row.querySelector("[name='title']").value.trim() || "Untitled",
+              url: row.querySelector("[name='url']").value.trim() || "#",
+              desc: row.querySelector("[name='desc']").value.trim(),
+              icon: row.querySelector("[name='icon']").value.trim() || "•",
+            };
+          });
+
+        const saveMenuItems = (items) => {
+          const saved = readSettings();
+          localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+              ...saved,
+              menuItems: items,
+              footer: getFooterText(),
+            }),
+          );
+          applyItems(items);
+          renderDashboard();
+        };
+
         const renderEditor = () => {
           rows.replaceChildren();
           getItems().forEach((item) => {
@@ -1080,6 +1197,8 @@
             row.dataset.id = item.id;
             addField(row, "Name", item.title, "title");
             addField(row, "Link", item.url, "url");
+            addField(row, "Description", item.desc || "", "desc");
+            addField(row, "Icon", item.icon || "•", "icon");
             rows.append(row);
           });
 
@@ -1105,6 +1224,7 @@
           renderDashboard();
           dashboardMain.hidden = false;
           subscriberDashboard.hidden = true;
+          menuDashboard.hidden = true;
           dashboard.hidden = !dashboard.hidden;
           panel.hidden = true;
           signup.hidden = true;
@@ -1125,11 +1245,49 @@
           renderDashboard();
           dashboardMain.hidden = true;
           subscriberDashboard.hidden = false;
+          menuDashboard.hidden = true;
         });
 
         backDashboard.addEventListener("click", () => {
           dashboardMain.hidden = false;
           subscriberDashboard.hidden = true;
+        });
+
+        openMenus.addEventListener("click", () => {
+          renderMenuManager();
+          dashboardMain.hidden = true;
+          subscriberDashboard.hidden = true;
+          menuDashboard.hidden = false;
+        });
+
+        backMenuDashboard.addEventListener("click", () => {
+          dashboardMain.hidden = false;
+          menuDashboard.hidden = true;
+        });
+
+        addMenu.addEventListener("click", () => {
+          const id = `menu-${Date.now().toString(36)}`;
+          menuManager.append(
+            buildMenuManagerRow({
+              id,
+              title: "New Menu",
+              url: "#",
+              desc: "Custom menu link",
+              icon: "•",
+              className: "link",
+              newsletter: false,
+            }),
+          );
+        });
+
+        saveMenus.addEventListener("click", () => {
+          saveMenuItems(collectManagedItems());
+          renderMenuManager();
+        });
+
+        resetMenus.addEventListener("click", () => {
+          saveMenuItems(defaults);
+          renderMenuManager();
         });
 
         signupClose.addEventListener("click", () => {
@@ -1199,37 +1357,47 @@
 
         form.addEventListener("submit", (event) => {
           event.preventDefault();
-          const settings = { menu: {}, footer: footer.dataset.defaultFooter };
+          const settings = { menuItems: [], footer: footer.dataset.defaultFooter };
           [...rows.querySelectorAll(".editor-row[data-id]")].forEach((row) => {
-            settings.menu[row.dataset.id] = {
+            const original =
+              getItems().find((item) => item.id === row.dataset.id) ||
+              defaults.find((item) => item.id === row.dataset.id) ||
+              {};
+            settings.menuItems.push({
+              ...original,
+              id: row.dataset.id,
               title: row.querySelector("[name='title']").value.trim(),
               url: row.querySelector("[name='url']").value.trim(),
-            };
+              desc: row.querySelector("[name='desc']").value.trim(),
+              icon: row.querySelector("[name='icon']").value.trim() || "•",
+            });
           });
           settings.footer =
             rows.querySelector(".editor-row[data-role='footer'] [name='footer']").value.trim() ||
             footer.dataset.defaultFooter;
           localStorage.setItem(storageKey, JSON.stringify(settings));
-          applyItems(getItems());
+          applyItems(settings.menuItems);
           applyFooter();
           panel.hidden = true;
           renderDashboard();
         });
 
-        links.forEach((link) => {
-          link.addEventListener("click", (event) => {
-            recordClick(link.dataset.editId);
-            if (link.dataset.newsletterTrigger !== undefined) {
-              event.preventDefault();
-              signupMessage.textContent = "";
-              signup.hidden = false;
-              panel.hidden = true;
-              dashboard.hidden = true;
-              updateSignupState();
-              signupEmail.focus();
-            }
+        const bindLinkEvents = () => {
+          links.forEach((link) => {
+            link.addEventListener("click", (event) => {
+              recordClick(link.dataset.editId);
+              if (link.dataset.newsletterTrigger !== undefined) {
+                event.preventDefault();
+                signupMessage.textContent = "";
+                signup.hidden = false;
+                panel.hidden = true;
+                dashboard.hidden = true;
+                updateSignupState();
+                signupEmail.focus();
+              }
+            });
           });
-        });
+        };
 
         floatingActions.hidden = !isOwner;
         recordVisit();
