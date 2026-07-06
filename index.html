@@ -8,6 +8,7 @@
       name="description"
       content="A Linktree-style page with profile, social, content, and contact links."
     />
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
       :root {
         --ink: #171717;
@@ -89,6 +90,16 @@
         margin: 10px 0 0;
         color: var(--teal);
         font-weight: 750;
+      }
+
+      .handle-link {
+        color: inherit;
+      }
+
+      .handle-link:hover,
+      .handle-link:focus-visible {
+        text-decoration: underline;
+        outline: none;
       }
 
       .bio {
@@ -204,6 +215,16 @@
         color: rgba(255, 255, 255, 0.78);
       }
 
+      .newsletter {
+        min-height: 76px;
+        border-color: rgba(15, 118, 110, 0.44);
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .newsletter .title {
+        font-size: 1.04rem;
+      }
+
       .featured .desc,
       .featured .arrow {
         color: rgba(255, 255, 255, 0.72);
@@ -214,6 +235,250 @@
         text-align: center;
         color: var(--muted);
         font-size: 0.84rem;
+      }
+
+      .floating-actions {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .floating-actions[hidden] {
+        display: none;
+      }
+
+      .edit-toggle,
+      .dashboard-toggle {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: var(--ink);
+        color: var(--white);
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      .dashboard-toggle {
+        background: var(--teal);
+      }
+
+      .editor,
+      .dashboard,
+      .signup {
+        position: fixed;
+        inset: auto 14px 130px auto;
+        width: min(420px, calc(100vw - 28px));
+        max-height: min(620px, calc(100vh - 100px));
+        overflow: auto;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .editor[hidden],
+      .dashboard[hidden],
+      .signup[hidden] {
+        display: none;
+      }
+
+      .editor-head,
+      .editor-actions,
+      .dashboard-head,
+      .dashboard-actions,
+      .signup-head,
+      .signup-actions,
+      .stat-row,
+      .subscriber-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .editor-title,
+      .dashboard-title,
+      .signup-title {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.2;
+      }
+
+      .editor-close,
+      .dashboard-close,
+      .signup-close,
+      .editor-action,
+      .dashboard-action,
+      .signup-action {
+        min-height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--white);
+        color: var(--ink);
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .editor-close,
+      .dashboard-close,
+      .signup-close {
+        width: 36px;
+      }
+
+      .editor-action,
+      .dashboard-action,
+      .signup-action {
+        padding: 0 12px;
+      }
+
+      .editor-action.primary,
+      .signup-action.primary {
+        border-color: var(--teal);
+        background: var(--teal);
+        color: var(--white);
+      }
+
+      .signup-action:disabled {
+        cursor: not-allowed;
+        opacity: 0.44;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 14px 0;
+      }
+
+      .stat-card {
+        min-height: 82px;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        color: var(--ink);
+        font: inherit;
+        text-align: left;
+      }
+
+      button.stat-card {
+        cursor: pointer;
+      }
+
+      button.stat-card:hover,
+      button.stat-card:focus-visible {
+        border-color: rgba(15, 118, 110, 0.55);
+        outline: none;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .stat-label,
+      .stat-name {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .stat-value {
+        display: block;
+        margin-top: 6px;
+        font-size: 1.55rem;
+        font-weight: 850;
+      }
+
+      .stat-list,
+      .subscriber-list {
+        display: grid;
+        gap: 8px;
+        margin: 12px 0;
+      }
+
+      .stat-row,
+      .subscriber-row {
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .stat-count,
+      .subscriber-date {
+        font-weight: 850;
+      }
+
+      .subscriber-meta {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .subscriber-email {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .subscriber-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 14px 0;
+      }
+
+      .signup-copy {
+        margin: 12px 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .signup-message {
+        min-height: 20px;
+        margin: 10px 0 0;
+        color: var(--teal);
+        font-size: 0.88rem;
+        font-weight: 800;
+      }
+
+      .editor-rows {
+        display: grid;
+        gap: 12px;
+        margin: 14px 0;
+      }
+
+      .editor-row {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .editor-label {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .editor-input,
+      .signup-input {
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        color: var(--ink);
+        font: inherit;
       }
 
       @media (max-width: 380px) {
@@ -230,6 +495,12 @@
           width: 38px;
           height: 38px;
         }
+
+        .editor,
+        .dashboard,
+        .signup {
+          inset-inline: 14px;
+        }
       }
     </style>
   </head>
@@ -240,7 +511,11 @@
           <img class="avatar" src="./logo.jpg" alt="The Food Party logo" />
         </div>
         <h1>The Food Party</h1>
-        <p class="handle">@thefoodparty.official · @steveseoulk</p>
+        <p class="handle">
+          <a class="handle-link" href="https://www.instagram.com/thefoodparty.official/" target="_blank" rel="noreferrer">@thefoodparty.official</a>
+          ·
+          <a class="handle-link" href="https://www.instagram.com/steveseoulk/" target="_blank" rel="noreferrer">@steveseoulk</a>
+        </p>
         <p class="bio">
           Explore The Food Party, NVIDIA Inception Program powered AI, social channels,
           video content, and contact information in one place.
@@ -248,52 +523,91 @@
       </section>
 
       <nav class="links" aria-label="Main links">
-        <a class="link ambassador" href="https://forms.gle/NbrDPsauLKRk5gvG6" target="_blank" rel="noreferrer">
+        <a
+          class="link ambassador"
+          href="https://forms.gle/NbrDPsauLKRk5gvG6"
+          target="_blank"
+          rel="noreferrer"
+          data-edit-id="ambassador"
+          data-default-title="Global Ambassador Program"
+          data-default-url="https://forms.gle/NbrDPsauLKRk5gvG6"
+        >
           <span class="icon gold">🎓</span>
           <span class="text">
-            <span class="title">👇 Join Our 🎓 Global Ambassador Program</span>
+            <span class="title">Global Ambassador Program</span>
             <span class="desc">Apply now and grow with The Food Party</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link featured" href="https://www.fdparty.com" target="_blank" rel="noreferrer">
-          <span class="icon coral">★</span>
+        <a
+          class="link newsletter"
+          href="#newsletter"
+          data-edit-id="newsletter"
+          data-default-title="Get Free Event Invitations & Newsletter"
+          data-default-url="#newsletter"
+          data-newsletter-trigger
+        >
+          <span class="icon teal">✉</span>
           <span class="text">
-            <span class="title">Official Website</span>
-            <span class="desc">Visit the Food Party website</span>
+            <span class="title">Get Free Event Invitations & Newsletter</span>
+            <span class="desc">Join the list for upcoming Food Party news</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="https://www.instagram.com/thefoodparty.official/" target="_blank" rel="noreferrer">
-          <span class="icon teal">IG</span>
+        <a
+          class="link"
+          href="#guest"
+          data-edit-id="guest"
+          data-default-title="Guest Link"
+          data-default-url="#guest"
+        >
+          <span class="icon teal">G</span>
           <span class="text">
-            <span class="title">Instagram</span>
-            <span class="desc">Photos, updates, and behind-the-scenes moments</span>
+            <span class="title">Guest Link</span>
+            <span class="desc">For guests joining The Food Party</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="https://www.youtube.com/@fdpartycom" target="_blank" rel="noreferrer">
-          <span class="icon coral">YT</span>
+        <a
+          class="link"
+          href="#host"
+          data-edit-id="host"
+          data-default-title="Host Link"
+          data-default-url="#host"
+        >
+          <span class="icon gold">H</span>
           <span class="text">
-            <span class="title">YouTube</span>
-            <span class="desc">Videos, stories, and playlists</span>
+            <span class="title">Host Link</span>
+            <span class="desc">For hosts creating Food Party events</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="https://www.linkedin.com/in/sung-tae-steve-kim-4490785a/" target="_blank" rel="noreferrer">
-          <span class="icon gold">B</span>
+        <a
+          class="link"
+          href="?owner=1"
+          data-edit-id="admin"
+          data-default-title="Admin Link"
+          data-default-url="?owner=1"
+        >
+          <span class="icon">A</span>
           <span class="text">
-            <span class="title">Blog</span>
-            <span class="desc">LinkedIn profile and professional updates</span>
+            <span class="title">Admin Link</span>
+            <span class="desc">For admins managing The Food Party</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
 
-        <a class="link" href="mailto:help@fdparty.com">
+        <a
+          class="link"
+          href="mailto:help@fdparty.com"
+          data-edit-id="contact"
+          data-default-title="Contact"
+          data-default-url="mailto:help@fdparty.com"
+        >
           <span class="icon">✉</span>
           <span class="text">
             <span class="title">Contact</span>
@@ -303,7 +617,632 @@
         </a>
       </nav>
 
-      <footer class="footer">© 2026 Your Name</footer>
+      <footer class="footer" data-default-footer="© 2026 The Food Party">© 2026 The Food Party</footer>
     </main>
+
+    <div class="floating-actions" aria-label="Page tools" hidden>
+      <button class="dashboard-toggle" type="button" aria-label="Open dashboard" title="Dashboard">
+        ▦
+      </button>
+      <button class="edit-toggle" type="button" aria-label="Edit menu links" title="Edit menu links">
+        ✎
+      </button>
+    </div>
+
+    <aside class="editor" aria-label="Menu editor" hidden>
+      <form id="linkEditor">
+        <div class="editor-head">
+          <h2 class="editor-title">Menu</h2>
+          <button class="editor-close" type="button" aria-label="Close editor">×</button>
+        </div>
+        <div class="editor-rows"></div>
+        <div class="editor-actions">
+          <button class="editor-action" type="button" data-reset>Reset</button>
+          <button class="editor-action primary" type="submit">Save</button>
+        </div>
+      </form>
+    </aside>
+
+    <aside class="dashboard" aria-label="Dashboard" hidden>
+      <div class="dashboard-head">
+        <h2 class="dashboard-title">Dashboard</h2>
+        <button class="dashboard-close" type="button" aria-label="Close dashboard">×</button>
+      </div>
+      <div data-dashboard-main>
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <span class="stat-label">Total Clicks</span>
+            <span class="stat-value" data-stat-total>0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Top Link</span>
+            <span class="stat-value" data-stat-top>None</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Avg Stay</span>
+            <span class="stat-value" data-stat-stay>0s</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Revisit Rate</span>
+            <span class="stat-value" data-stat-revisit>0%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">DAU</span>
+            <span class="stat-value" data-stat-dau>0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">MAU</span>
+            <span class="stat-value" data-stat-mau>0</span>
+          </div>
+          <button class="stat-card" type="button" data-open-subscribers>
+            <span class="stat-label">Subscribers</span>
+            <span class="stat-value" data-stat-subscribers>0</span>
+          </button>
+        </div>
+        <div class="stat-list" data-stat-list></div>
+        <div class="dashboard-actions">
+          <button class="dashboard-action" type="button" data-stat-reset>Reset Stats</button>
+        </div>
+      </div>
+      <div data-subscriber-dashboard hidden>
+        <div class="dashboard-actions">
+          <button class="dashboard-action" type="button" data-back-dashboard>Back</button>
+        </div>
+        <div class="subscriber-summary">
+          <div class="stat-card">
+            <span class="stat-label">Subscribers</span>
+            <span class="stat-value" data-subscriber-total>0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Latest Signup</span>
+            <span class="stat-value" data-subscriber-latest>None</span>
+          </div>
+        </div>
+        <div class="subscriber-list" data-subscriber-list></div>
+      </div>
+    </aside>
+
+    <aside class="signup" aria-label="Newsletter signup" hidden>
+      <form id="newsletterSignup">
+        <div class="signup-head">
+          <h2 class="signup-title">Join the List</h2>
+          <button class="signup-close" type="button" aria-label="Close signup">×</button>
+        </div>
+        <p class="signup-copy">Get free event invitations and newsletter updates from The Food Party.</p>
+        <label class="editor-label" for="subscriberEmail">Email</label>
+        <input
+          class="signup-input"
+          id="subscriberEmail"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+        />
+        <p class="signup-message" data-signup-message></p>
+        <div class="signup-actions">
+          <button class="signup-action primary" type="submit" disabled>Subscribe</button>
+        </div>
+      </form>
+    </aside>
+
+    <script>
+      (() => {
+        const storageKey = "the-food-party-menu-v1";
+        const statsKey = "the-food-party-dashboard-v1";
+        const analyticsKey = "the-food-party-analytics-v1";
+        const subscribersKey = "the-food-party-subscribers-v1";
+        const emailDelivery = {
+          publicKey: "",
+          serviceId: "",
+          templateId: "",
+        };
+        const isOwner = new URLSearchParams(window.location.search).get("owner") === "1";
+        const links = [...document.querySelectorAll("[data-edit-id]")];
+        const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const sessionStart = Date.now();
+        const toggle = document.querySelector(".edit-toggle");
+        const floatingActions = document.querySelector(".floating-actions");
+        const panel = document.querySelector(".editor");
+        const close = document.querySelector(".editor-close");
+        const form = document.querySelector("#linkEditor");
+        const rows = document.querySelector(".editor-rows");
+        const reset = document.querySelector("[data-reset]");
+        const footer = document.querySelector(".footer");
+        const dashboardToggle = document.querySelector(".dashboard-toggle");
+        const dashboard = document.querySelector(".dashboard");
+        const dashboardClose = document.querySelector(".dashboard-close");
+        const statTotal = document.querySelector("[data-stat-total]");
+        const statTop = document.querySelector("[data-stat-top]");
+        const statStay = document.querySelector("[data-stat-stay]");
+        const statRevisit = document.querySelector("[data-stat-revisit]");
+        const statDau = document.querySelector("[data-stat-dau]");
+        const statMau = document.querySelector("[data-stat-mau]");
+        const statSubscribers = document.querySelector("[data-stat-subscribers]");
+        const subscriberTotal = document.querySelector("[data-subscriber-total]");
+        const subscriberLatest = document.querySelector("[data-subscriber-latest]");
+        const statList = document.querySelector("[data-stat-list]");
+        const subscriberList = document.querySelector("[data-subscriber-list]");
+        const statReset = document.querySelector("[data-stat-reset]");
+        const dashboardMain = document.querySelector("[data-dashboard-main]");
+        const subscriberDashboard = document.querySelector("[data-subscriber-dashboard]");
+        const openSubscribers = document.querySelector("[data-open-subscribers]");
+        const backDashboard = document.querySelector("[data-back-dashboard]");
+        const signup = document.querySelector(".signup");
+        const signupForm = document.querySelector("#newsletterSignup");
+        const signupClose = document.querySelector(".signup-close");
+        const signupMessage = document.querySelector("[data-signup-message]");
+        const signupSubmit = signupForm.querySelector("[type='submit']");
+        const signupEmail = signupForm.elements.email;
+
+        const defaults = links.map((link) => ({
+          id: link.dataset.editId,
+          title: link.dataset.defaultTitle,
+          url: link.dataset.defaultUrl,
+        }));
+
+        const normalizeUrl = (value) => {
+          const trimmed = value.trim();
+          if (!trimmed) return "#";
+          if (trimmed.includes("@") && !trimmed.includes(":")) return `mailto:${trimmed}`;
+          if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+          return `https://${trimmed}`;
+        };
+
+        const readSettings = () => {
+          try {
+            return JSON.parse(localStorage.getItem(storageKey)) || {};
+          } catch {
+            return {};
+          }
+        };
+
+        const readStats = () => {
+          try {
+            return JSON.parse(localStorage.getItem(statsKey)) || {};
+          } catch {
+            return {};
+          }
+        };
+
+        const readAnalytics = () => {
+          try {
+            return (
+              JSON.parse(localStorage.getItem(analyticsKey)) || {
+                visits: [],
+                sessions: {},
+              }
+            );
+          } catch {
+            return { visits: [], sessions: {} };
+          }
+        };
+
+        const readSubscribers = () => {
+          try {
+            return JSON.parse(localStorage.getItem(subscribersKey)) || [];
+          } catch {
+            return [];
+          }
+        };
+
+        const writeSubscribers = (subscribers) => {
+          localStorage.setItem(subscribersKey, JSON.stringify(subscribers));
+        };
+
+        const createTicketCode = () =>
+          `TFP-${Date.now().toString(36).toUpperCase()}-${Math.random()
+            .toString(36)
+            .slice(2, 7)
+            .toUpperCase()}`;
+
+        const canSendEmail = () =>
+          Boolean(
+            window.emailjs &&
+              emailDelivery.publicKey &&
+              emailDelivery.serviceId &&
+              emailDelivery.templateId,
+          );
+
+        const sendConfirmationEmail = async (subscriber) => {
+          if (!canSendEmail()) return false;
+          window.emailjs.init({ publicKey: emailDelivery.publicKey });
+          await window.emailjs.send(emailDelivery.serviceId, emailDelivery.templateId, {
+            to_email: subscriber.email,
+            ticket_code: subscriber.ticketCode,
+            confirmation_message:
+              "Your subscription is confirmed. Your free invitation ticket is included.",
+          });
+          return true;
+        };
+
+        const isValidEmail = (value) =>
+          /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value.trim());
+
+        const updateSignupState = () => {
+          const value = signupEmail.value.trim();
+          const isEmpty = !value;
+          const isValid = isValidEmail(value);
+          signupSubmit.disabled = !isValid;
+          signupMessage.textContent = isEmpty || isValid ? "" : "Please use an English email address.";
+        };
+
+        const writeAnalytics = (analytics) => {
+          localStorage.setItem(analyticsKey, JSON.stringify(analytics));
+        };
+
+        const dateKey = (date) => date.toISOString().slice(0, 10);
+        const monthKey = (date) => date.toISOString().slice(0, 7);
+        const visitorId = () => {
+          const key = "the-food-party-visitor-id";
+          const existing = localStorage.getItem(key);
+          if (existing) return existing;
+          const value = `visitor-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          localStorage.setItem(key, value);
+          return value;
+        };
+
+        const recordVisit = () => {
+          const now = new Date();
+          const analytics = readAnalytics();
+          const visits = Array.isArray(analytics.visits) ? analytics.visits : [];
+          const sessions = analytics.sessions || {};
+          const currentVisitor = visitorId();
+
+          visits.push({
+            sessionId,
+            visitorId: currentVisitor,
+            day: dateKey(now),
+            month: monthKey(now),
+            startedAt: sessionStart,
+          });
+
+          sessions[sessionId] = {
+            startedAt: sessionStart,
+            duration: 0,
+          };
+
+          analytics.visits = visits.slice(-500);
+          analytics.sessions = sessions;
+          writeAnalytics(analytics);
+        };
+
+        const updateStayTime = () => {
+          const analytics = readAnalytics();
+          analytics.sessions = analytics.sessions || {};
+          analytics.sessions[sessionId] = {
+            startedAt: sessionStart,
+            duration: Math.max(1, Math.round((Date.now() - sessionStart) / 1000)),
+          };
+          writeAnalytics(analytics);
+        };
+
+        const formatDuration = (seconds) => {
+          if (seconds < 60) return `${seconds}s`;
+          const minutes = Math.floor(seconds / 60);
+          const rest = seconds % 60;
+          return rest ? `${minutes}m ${rest}s` : `${minutes}m`;
+        };
+
+        const getItems = () => {
+          const saved = readSettings();
+          const menu = saved.menu || saved;
+          return defaults.map((item) => ({ ...item, ...(menu[item.id] || {}) }));
+        };
+
+        const getFooterText = () => {
+          const saved = readSettings();
+          return saved.footer || footer.dataset.defaultFooter;
+        };
+
+        const applyItems = (items) => {
+          items.forEach((item) => {
+            const link = links.find((candidate) => candidate.dataset.editId === item.id);
+            if (!link) return;
+            link.href = normalizeUrl(item.url);
+            link.querySelector(".title").textContent = item.title;
+          });
+        };
+
+        const applyFooter = () => {
+          footer.textContent = getFooterText();
+        };
+
+        const getClickCount = (stats, id) => {
+          const value = stats[id];
+          if (typeof value === "number") return value;
+          return Array.isArray(value?.visitors) ? value.visitors.length : 0;
+        };
+
+        const recordClick = (id) => {
+          const stats = readStats();
+          const currentVisitor = visitorId();
+          const value = stats[id];
+          const visitors = Array.isArray(value?.visitors) ? value.visitors : [];
+
+          if (typeof value === "number") {
+            stats[id] = {
+              legacyClicks: value,
+              visitors: [currentVisitor],
+            };
+          } else if (!visitors.includes(currentVisitor)) {
+            stats[id] = {
+              ...(value || {}),
+              visitors: [...visitors, currentVisitor],
+            };
+          }
+
+          localStorage.setItem(statsKey, JSON.stringify(stats));
+          renderDashboard();
+        };
+
+        const renderDashboard = () => {
+          const stats = readStats();
+          updateStayTime();
+          const analytics = readAnalytics();
+          const visits = Array.isArray(analytics.visits) ? analytics.visits : [];
+          const sessions = Object.values(analytics.sessions || {});
+          const today = dateKey(new Date());
+          const month = monthKey(new Date());
+          const items = getItems().map((item) => ({ ...item, clicks: getClickCount(stats, item.id) }));
+          const total = items.reduce((sum, item) => sum + item.clicks, 0);
+          const top = items.reduce((best, item) => (item.clicks > best.clicks ? item : best), {
+            title: "None",
+            clicks: 0,
+          });
+          const totalStay = sessions.reduce((sum, item) => sum + (item.duration || 0), 0);
+          const avgStay = sessions.length ? Math.round(totalStay / sessions.length) : 0;
+          const visitorCounts = visits.reduce((counts, visit) => {
+            counts[visit.visitorId] = (counts[visit.visitorId] || 0) + 1;
+            return counts;
+          }, {});
+          const visitors = Object.keys(visitorCounts).length;
+          const revisitors = Object.values(visitorCounts).filter((count) => count > 1).length;
+          const dau = new Set(
+            visits.filter((visit) => visit.day === today).map((visit) => visit.visitorId),
+          ).size;
+          const mau = new Set(
+            visits.filter((visit) => visit.month === month).map((visit) => visit.visitorId),
+          ).size;
+
+          statTotal.textContent = String(total);
+          statTop.textContent = top.clicks ? top.title : "None";
+          statStay.textContent = formatDuration(avgStay);
+          statRevisit.textContent = visitors ? `${Math.round((revisitors / visitors) * 100)}%` : "0%";
+          statDau.textContent = String(dau);
+          statMau.textContent = String(mau);
+          const subscribers = readSubscribers();
+          statSubscribers.textContent = String(subscribers.length);
+          subscriberTotal.textContent = String(subscribers.length);
+          subscriberLatest.textContent = subscribers.length
+            ? subscribers[subscribers.length - 1].date
+            : "None";
+          statList.replaceChildren();
+          subscriberList.replaceChildren();
+
+          items.forEach((item) => {
+            const row = document.createElement("div");
+            row.className = "stat-row";
+
+            const name = document.createElement("span");
+            name.className = "stat-name";
+            name.textContent = item.title;
+
+            const count = document.createElement("span");
+            count.className = "stat-count";
+            count.textContent = `${item.clicks} clicks`;
+
+            row.append(name, count);
+            statList.append(row);
+          });
+
+          subscribers.forEach((subscriber) => {
+            const row = document.createElement("div");
+            row.className = "subscriber-row";
+
+            const emailWrap = document.createElement("span");
+            const email = document.createElement("span");
+            email.className = "subscriber-email";
+            email.textContent = subscriber.email;
+            const meta = document.createElement("span");
+            meta.className = "subscriber-meta";
+            meta.textContent = `${subscriber.ticketCode || "No ticket"} · ${
+              subscriber.emailSent ? "Email sent" : "Email not configured"
+            }`;
+            emailWrap.append(email, meta);
+
+            const date = document.createElement("span");
+            date.className = "subscriber-date";
+            date.textContent = subscriber.date;
+
+            row.append(emailWrap, date);
+            subscriberList.append(row);
+          });
+        };
+
+        const addField = (row, labelText, value, name) => {
+          const label = document.createElement("label");
+          label.className = "editor-label";
+          label.textContent = labelText;
+
+          const input = document.createElement("input");
+          input.className = "editor-input";
+          input.name = name;
+          input.value = value;
+
+          row.append(label, input);
+        };
+
+        const renderEditor = () => {
+          rows.replaceChildren();
+          getItems().forEach((item) => {
+            const row = document.createElement("div");
+            row.className = "editor-row";
+            row.dataset.id = item.id;
+            addField(row, "Name", item.title, "title");
+            addField(row, "Link", item.url, "url");
+            rows.append(row);
+          });
+
+          const footerRow = document.createElement("div");
+          footerRow.className = "editor-row";
+          footerRow.dataset.role = "footer";
+          addField(footerRow, "Footer", getFooterText(), "footer");
+          rows.append(footerRow);
+        };
+
+        toggle.addEventListener("click", () => {
+          renderEditor();
+          panel.hidden = !panel.hidden;
+          dashboard.hidden = true;
+          signup.hidden = true;
+        });
+
+        close.addEventListener("click", () => {
+          panel.hidden = true;
+        });
+
+        dashboardToggle.addEventListener("click", () => {
+          renderDashboard();
+          dashboardMain.hidden = false;
+          subscriberDashboard.hidden = true;
+          dashboard.hidden = !dashboard.hidden;
+          panel.hidden = true;
+          signup.hidden = true;
+        });
+
+        dashboardClose.addEventListener("click", () => {
+          dashboard.hidden = true;
+        });
+
+        statReset.addEventListener("click", () => {
+          localStorage.removeItem(statsKey);
+          localStorage.removeItem(analyticsKey);
+          recordVisit();
+          renderDashboard();
+        });
+
+        openSubscribers.addEventListener("click", () => {
+          renderDashboard();
+          dashboardMain.hidden = true;
+          subscriberDashboard.hidden = false;
+        });
+
+        backDashboard.addEventListener("click", () => {
+          dashboardMain.hidden = false;
+          subscriberDashboard.hidden = true;
+        });
+
+        signupClose.addEventListener("click", () => {
+          signup.hidden = true;
+        });
+
+        signupEmail.addEventListener("input", updateSignupState);
+
+        signupEmail.addEventListener("blur", updateSignupState);
+
+        signupForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const email = signupEmail.value.trim().toLowerCase();
+
+          if (!isValidEmail(email)) {
+            signupMessage.textContent = "Please use an English email address.";
+            signupSubmit.disabled = true;
+            return;
+          }
+
+          const subscribers = readSubscribers();
+          const existing = subscribers.find((subscriber) => subscriber.email === email);
+          const exists = Boolean(existing);
+          let currentSubscriber = existing;
+
+          if (!exists) {
+            currentSubscriber = {
+              email,
+              date: new Date().toISOString().slice(0, 10),
+              ticketCode: createTicketCode(),
+              emailSent: false,
+            };
+            subscribers.push(currentSubscriber);
+            writeSubscribers(subscribers);
+          }
+
+          signupSubmit.disabled = true;
+          signupSubmit.textContent = "Sending...";
+
+          try {
+            if (!exists && currentSubscriber) {
+              currentSubscriber.emailSent = await sendConfirmationEmail(currentSubscriber);
+              writeSubscribers(subscribers);
+            }
+            signupMessage.textContent = exists
+              ? "This email is already on the list."
+              : currentSubscriber.emailSent
+                ? "Successfully subscribed. The confirmation email and free invitation ticket were sent."
+                : "Successfully subscribed. Email delivery is not configured yet, so the free invitation ticket was saved in the dashboard.";
+          } catch {
+            signupMessage.textContent =
+              "Successfully subscribed, but the confirmation email could not be sent. Please check the dashboard ticket list.";
+          }
+
+          signupSubmit.textContent = "Subscribe";
+          signupEmail.value = "";
+          updateSignupState();
+          renderDashboard();
+        });
+
+        reset.addEventListener("click", () => {
+          localStorage.removeItem(storageKey);
+          applyItems(defaults);
+          applyFooter();
+          renderEditor();
+        });
+
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const settings = { menu: {}, footer: footer.dataset.defaultFooter };
+          [...rows.querySelectorAll(".editor-row[data-id]")].forEach((row) => {
+            settings.menu[row.dataset.id] = {
+              title: row.querySelector("[name='title']").value.trim(),
+              url: row.querySelector("[name='url']").value.trim(),
+            };
+          });
+          settings.footer =
+            rows.querySelector(".editor-row[data-role='footer'] [name='footer']").value.trim() ||
+            footer.dataset.defaultFooter;
+          localStorage.setItem(storageKey, JSON.stringify(settings));
+          applyItems(getItems());
+          applyFooter();
+          panel.hidden = true;
+          renderDashboard();
+        });
+
+        links.forEach((link) => {
+          link.addEventListener("click", (event) => {
+            recordClick(link.dataset.editId);
+            if (link.dataset.newsletterTrigger !== undefined) {
+              event.preventDefault();
+              signupMessage.textContent = "";
+              signup.hidden = false;
+              panel.hidden = true;
+              dashboard.hidden = true;
+              updateSignupState();
+              signupEmail.focus();
+            }
+          });
+        });
+
+        floatingActions.hidden = !isOwner;
+        recordVisit();
+        setInterval(updateStayTime, 5000);
+        window.addEventListener("pagehide", updateStayTime);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") updateStayTime();
+        });
+
+        applyItems(getItems());
+        applyFooter();
+        renderDashboard();
+      })();
+    </script>
   </body>
 </html>
