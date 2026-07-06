@@ -471,6 +471,7 @@
       }
 
       .editor-input,
+      .editor-textarea,
       .signup-input {
         width: 100%;
         min-height: 38px;
@@ -479,6 +480,11 @@
         padding: 8px 10px;
         color: var(--ink);
         font: inherit;
+      }
+
+      .editor-textarea {
+        min-height: 88px;
+        resize: vertical;
       }
 
       @media (max-width: 380px) {
@@ -552,51 +558,6 @@
           <span class="text">
             <span class="title">Get Free Event Invitations & Newsletter</span>
             <span class="desc">Join the list for upcoming Food Party news</span>
-          </span>
-          <span class="arrow" aria-hidden="true">›</span>
-        </a>
-
-        <a
-          class="link"
-          href="#guest"
-          data-edit-id="guest"
-          data-default-title="Guest Link"
-          data-default-url="#guest"
-        >
-          <span class="icon teal">G</span>
-          <span class="text">
-            <span class="title">Guest Link</span>
-            <span class="desc">For guests joining The Food Party</span>
-          </span>
-          <span class="arrow" aria-hidden="true">›</span>
-        </a>
-
-        <a
-          class="link"
-          href="#host"
-          data-edit-id="host"
-          data-default-title="Host Link"
-          data-default-url="#host"
-        >
-          <span class="icon gold">H</span>
-          <span class="text">
-            <span class="title">Host Link</span>
-            <span class="desc">For hosts creating Food Party events</span>
-          </span>
-          <span class="arrow" aria-hidden="true">›</span>
-        </a>
-
-        <a
-          class="link"
-          href="?owner=1"
-          data-edit-id="admin"
-          data-default-title="Admin Link"
-          data-default-url="?owner=1"
-        >
-          <span class="icon">A</span>
-          <span class="text">
-            <span class="title">Admin Link</span>
-            <span class="desc">For admins managing The Food Party</span>
           </span>
           <span class="arrow" aria-hidden="true">›</span>
         </a>
@@ -682,6 +643,10 @@
             <span class="stat-label">Menus</span>
             <span class="stat-value" data-stat-menus>0</span>
           </button>
+          <button class="stat-card" type="button" data-open-page-settings>
+            <span class="stat-label">Page</span>
+            <span class="stat-value">Settings</span>
+          </button>
         </div>
         <div class="stat-list" data-stat-list></div>
         <div class="dashboard-actions">
@@ -713,6 +678,16 @@
         <div class="dashboard-actions">
           <button class="dashboard-action" type="button" data-reset-menus>Reset Menus</button>
           <button class="dashboard-action" type="button" data-save-menus>Save Menus</button>
+        </div>
+      </div>
+      <div data-page-dashboard hidden>
+        <div class="dashboard-actions">
+          <button class="dashboard-action" type="button" data-back-page-dashboard>Back</button>
+        </div>
+        <div class="editor-rows" data-page-settings></div>
+        <div class="dashboard-actions">
+          <button class="dashboard-action" type="button" data-reset-page-settings>Reset Page</button>
+          <button class="dashboard-action" type="button" data-save-page-settings>Save Page</button>
         </div>
       </div>
     </aside>
@@ -791,6 +766,12 @@
         const addMenu = document.querySelector("[data-add-menu]");
         const saveMenus = document.querySelector("[data-save-menus]");
         const resetMenus = document.querySelector("[data-reset-menus]");
+        const pageDashboard = document.querySelector("[data-page-dashboard]");
+        const openPageSettings = document.querySelector("[data-open-page-settings]");
+        const backPageDashboard = document.querySelector("[data-back-page-dashboard]");
+        const pageSettingsRows = document.querySelector("[data-page-settings]");
+        const savePageSettingsButton = document.querySelector("[data-save-page-settings]");
+        const resetPageSettingsButton = document.querySelector("[data-reset-page-settings]");
         const signup = document.querySelector(".signup");
         const signupForm = document.querySelector("#newsletterSignup");
         const signupClose = document.querySelector(".signup-close");
@@ -809,6 +790,23 @@
           target: link.target,
           rel: link.rel,
         }));
+
+        const profileTitle = document.querySelector(".profile h1");
+        const avatar = document.querySelector(".avatar");
+        const handle = document.querySelector(".handle");
+        const bio = document.querySelector(".bio");
+        const handleLinks = [...document.querySelectorAll(".handle-link")];
+        const pageDefaults = {
+          logoSrc: avatar.getAttribute("src") || "./logo.jpg",
+          logoAlt: avatar.getAttribute("alt") || "The Food Party logo",
+          title: profileTitle.textContent.trim() || "The Food Party",
+          handleOneText: handleLinks[0]?.textContent.trim() || "@thefoodparty.official",
+          handleOneUrl: handleLinks[0]?.getAttribute("href") || "https://www.instagram.com/thefoodparty.official/",
+          handleTwoText: handleLinks[1]?.textContent.trim() || "@steveseoulk",
+          handleTwoUrl: handleLinks[1]?.getAttribute("href") || "https://www.instagram.com/steveseoulk/",
+          bio: bio.textContent.replace(/\s+/g, " ").trim(),
+          footer: footer.dataset.defaultFooter,
+        };
 
         const normalizeUrl = (value) => {
           const trimmed = value.trim();
@@ -962,7 +960,39 @@
 
         const getFooterText = () => {
           const saved = readSettings();
-          return saved.footer || footer.dataset.defaultFooter;
+          return saved.page?.footer || saved.footer || footer.dataset.defaultFooter;
+        };
+
+        const getPageSettings = () => {
+          const saved = readSettings();
+          return {
+            ...pageDefaults,
+            ...(saved.page || {}),
+            footer: saved.page?.footer || saved.footer || pageDefaults.footer,
+          };
+        };
+
+        const createHandleLink = (text, url) => {
+          const link = document.createElement("a");
+          link.className = "handle-link";
+          link.href = normalizeUrl(url);
+          link.target = "_blank";
+          link.rel = "noreferrer";
+          link.textContent = text || "@thefoodparty.official";
+          return link;
+        };
+
+        const applyPageSettings = (settings) => {
+          avatar.src = settings.logoSrc || pageDefaults.logoSrc;
+          avatar.alt = settings.logoAlt || pageDefaults.logoAlt;
+          profileTitle.textContent = settings.title || pageDefaults.title;
+          handle.replaceChildren(
+            createHandleLink(settings.handleOneText, settings.handleOneUrl),
+            document.createTextNode(" · "),
+            createHandleLink(settings.handleTwoText, settings.handleTwoUrl),
+          );
+          bio.textContent = settings.bio || pageDefaults.bio;
+          footer.textContent = settings.footer || pageDefaults.footer;
         };
 
         const buildMenuLink = (item) => {
@@ -1137,6 +1167,83 @@
           row.append(label, input);
         };
 
+        const addTextarea = (row, labelText, value, name) => {
+          const label = document.createElement("label");
+          label.className = "editor-label";
+          label.textContent = labelText;
+
+          const input = document.createElement("textarea");
+          input.className = "editor-textarea";
+          input.name = name;
+          input.value = value;
+
+          row.append(label, input);
+        };
+
+        const buildPageSettingRow = ({ label, name, value, multiline = false }) => {
+          const row = document.createElement("div");
+          row.className = "editor-row";
+          row.dataset.name = name;
+          if (multiline) {
+            addTextarea(row, label, value, name);
+          } else {
+            addField(row, label, value, name);
+          }
+          return row;
+        };
+
+        const renderPageSettings = () => {
+          const settings = getPageSettings();
+          pageSettingsRows.replaceChildren(
+            buildPageSettingRow({ label: "Logo Image Path", name: "logoSrc", value: settings.logoSrc }),
+            buildPageSettingRow({ label: "Logo Alt Text", name: "logoAlt", value: settings.logoAlt }),
+            buildPageSettingRow({ label: "Page Title", name: "title", value: settings.title }),
+            buildPageSettingRow({ label: "Instagram 1 Name", name: "handleOneText", value: settings.handleOneText }),
+            buildPageSettingRow({ label: "Instagram 1 Link", name: "handleOneUrl", value: settings.handleOneUrl }),
+            buildPageSettingRow({ label: "Instagram 2 Name", name: "handleTwoText", value: settings.handleTwoText }),
+            buildPageSettingRow({ label: "Instagram 2 Link", name: "handleTwoUrl", value: settings.handleTwoUrl }),
+            buildPageSettingRow({ label: "Introduction", name: "bio", value: settings.bio, multiline: true }),
+            buildPageSettingRow({ label: "Footer", name: "footer", value: settings.footer }),
+          );
+        };
+
+        const collectPageSettings = () => ({
+          ...pageDefaults,
+          logoSrc:
+            pageSettingsRows.querySelector("[name='logoSrc']").value.trim() || pageDefaults.logoSrc,
+          logoAlt:
+            pageSettingsRows.querySelector("[name='logoAlt']").value.trim() || pageDefaults.logoAlt,
+          title: pageSettingsRows.querySelector("[name='title']").value.trim() || pageDefaults.title,
+          handleOneText:
+            pageSettingsRows.querySelector("[name='handleOneText']").value.trim() ||
+            pageDefaults.handleOneText,
+          handleOneUrl:
+            pageSettingsRows.querySelector("[name='handleOneUrl']").value.trim() ||
+            pageDefaults.handleOneUrl,
+          handleTwoText:
+            pageSettingsRows.querySelector("[name='handleTwoText']").value.trim() ||
+            pageDefaults.handleTwoText,
+          handleTwoUrl:
+            pageSettingsRows.querySelector("[name='handleTwoUrl']").value.trim() ||
+            pageDefaults.handleTwoUrl,
+          bio: pageSettingsRows.querySelector("[name='bio']").value.trim() || pageDefaults.bio,
+          footer: pageSettingsRows.querySelector("[name='footer']").value.trim() || pageDefaults.footer,
+        });
+
+        const savePageSettings = (settings) => {
+          const saved = readSettings();
+          localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+              ...saved,
+              page: settings,
+              footer: settings.footer,
+            }),
+          );
+          applyPageSettings(settings);
+          renderDashboard();
+        };
+
         const buildMenuManagerRow = (item) => {
           const row = document.createElement("div");
           row.className = "editor-row";
@@ -1225,6 +1332,7 @@
           dashboardMain.hidden = false;
           subscriberDashboard.hidden = true;
           menuDashboard.hidden = true;
+          pageDashboard.hidden = true;
           dashboard.hidden = !dashboard.hidden;
           panel.hidden = true;
           signup.hidden = true;
@@ -1246,6 +1354,7 @@
           dashboardMain.hidden = true;
           subscriberDashboard.hidden = false;
           menuDashboard.hidden = true;
+          pageDashboard.hidden = true;
         });
 
         backDashboard.addEventListener("click", () => {
@@ -1258,11 +1367,25 @@
           dashboardMain.hidden = true;
           subscriberDashboard.hidden = true;
           menuDashboard.hidden = false;
+          pageDashboard.hidden = true;
         });
 
         backMenuDashboard.addEventListener("click", () => {
           dashboardMain.hidden = false;
           menuDashboard.hidden = true;
+        });
+
+        openPageSettings.addEventListener("click", () => {
+          renderPageSettings();
+          dashboardMain.hidden = true;
+          subscriberDashboard.hidden = true;
+          menuDashboard.hidden = true;
+          pageDashboard.hidden = false;
+        });
+
+        backPageDashboard.addEventListener("click", () => {
+          dashboardMain.hidden = false;
+          pageDashboard.hidden = true;
         });
 
         addMenu.addEventListener("click", () => {
@@ -1288,6 +1411,16 @@
         resetMenus.addEventListener("click", () => {
           saveMenuItems(defaults);
           renderMenuManager();
+        });
+
+        savePageSettingsButton.addEventListener("click", () => {
+          savePageSettings(collectPageSettings());
+          renderPageSettings();
+        });
+
+        resetPageSettingsButton.addEventListener("click", () => {
+          savePageSettings(pageDefaults);
+          renderPageSettings();
         });
 
         signupClose.addEventListener("click", () => {
@@ -1349,7 +1482,15 @@
         });
 
         reset.addEventListener("click", () => {
-          localStorage.removeItem(storageKey);
+          const saved = readSettings();
+          localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+              ...saved,
+              menuItems: defaults,
+              footer: getFooterText(),
+            }),
+          );
           applyItems(defaults);
           applyFooter();
           renderEditor();
@@ -1357,7 +1498,7 @@
 
         form.addEventListener("submit", (event) => {
           event.preventDefault();
-          const settings = { menuItems: [], footer: footer.dataset.defaultFooter };
+          const settings = { ...readSettings(), menuItems: [], footer: getFooterText() };
           [...rows.querySelectorAll(".editor-row[data-id]")].forEach((row) => {
             const original =
               getItems().find((item) => item.id === row.dataset.id) ||
@@ -1375,9 +1516,13 @@
           settings.footer =
             rows.querySelector(".editor-row[data-role='footer'] [name='footer']").value.trim() ||
             footer.dataset.defaultFooter;
+          settings.page = {
+            ...getPageSettings(),
+            footer: settings.footer,
+          };
           localStorage.setItem(storageKey, JSON.stringify(settings));
           applyItems(settings.menuItems);
-          applyFooter();
+          applyPageSettings(settings.page);
           panel.hidden = true;
           renderDashboard();
         });
@@ -1407,6 +1552,7 @@
           if (document.visibilityState === "hidden") updateStayTime();
         });
 
+        applyPageSettings(getPageSettings());
         applyItems(getItems());
         applyFooter();
         renderDashboard();
