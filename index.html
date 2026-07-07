@@ -547,6 +547,21 @@
         </a>
 
         <a
+          class="link"
+          href="#"
+          data-edit-id="youth-startup-school"
+          data-default-title="청소년 창업학교"
+          data-default-url="#"
+        >
+          <span class="icon coral">🚀</span>
+          <span class="text">
+            <span class="title">청소년 창업학교</span>
+            <span class="desc">Youth entrepreneurship school program</span>
+          </span>
+          <span class="arrow" aria-hidden="true">›</span>
+        </a>
+
+        <a
           class="link newsletter"
           href="#newsletter"
           data-edit-id="newsletter"
@@ -953,7 +968,13 @@
 
         const getItems = () => {
           const saved = readSettings();
-          if (Array.isArray(saved.menuItems)) return saved.menuItems;
+          if (Array.isArray(saved.menuItems)) {
+            const items = [...saved.menuItems];
+            defaults.forEach((defaultItem) => {
+              if (!items.some((item) => item.id === defaultItem.id)) items.push(defaultItem);
+            });
+            return items;
+          }
           const menu = saved.menu || saved;
           return defaults.map((item) => ({ ...item, ...(menu[item.id] || {}) }));
         };
